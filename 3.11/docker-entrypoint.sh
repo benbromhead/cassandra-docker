@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 # first arg is `-f` or `--some-option`
 # or there are no args
@@ -20,7 +21,7 @@ fi
 
 # Allow injecting configuration values into c* yaml via env variables, this is optional and if no env overrides are
 # specified, then it will be a no-op. The only env var that MUST be set is CASSANDRA_SEEDS
-if [ "$1" = 'cassandra' ]; then
+if [ "$1" = 'cassandra' ] && [ "$CASSANDRA_ENV_OVERRIDES" = 'true' ]; then
 	: ${CASSANDRA_RPC_ADDRESS='0.0.0.0'}
 
 	: ${CASSANDRA_LISTEN_ADDRESS='auto'}
