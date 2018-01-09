@@ -1,9 +1,7 @@
 # vim:set ft=dockerfile:
-FROM instaclustr:cassandra-base
+FROM instaclustr/cassandra-base
 
-# explicitly set user/group IDs
 RUN groupadd -r cassandra --gid=999 && useradd -r -g cassandra --uid=999 cassandra
-
 
 ENV CASSANDRA_VERSION 3.0.15
 
@@ -27,4 +25,7 @@ VOLUME /var/lib/cassandra
 # 9042: CQL
 # 9160: thrift service
 EXPOSE 7000 7001 7199 9042 9160
-CMD ["cassandra", "-f", "-R"]
+
+USER 999:999
+
+CMD ["cassandra", "-f"]

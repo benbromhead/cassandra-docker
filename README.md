@@ -55,7 +55,7 @@ You can volume mount the configration directory or use some other configuration 
 	```
 	
 
-#Configuring using legacy cassandra-docker env variables
+# Configuring using legacy cassandra-docker env variables
 To start configuring Cassandra using legacy cassandra-docker env variables you will need to set CASSANDRA_ENV_OVERRIDES to 'true'. E.g.
 
 ```console
