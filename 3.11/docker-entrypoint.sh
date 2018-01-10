@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 set -x
 
 # first arg is `-f` or `--some-option`
@@ -8,6 +7,13 @@ if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
 	set -- cassandra -f "$@"
 fi
 
+#Enable mem locking if supported (and we have permission)
+if [ "$MEMORY_LOCK" == "true" ]; then
+    ulimit -l unlimited
+fi
+
+# Only break on error after trying to memlock
+set -e
 
 
 #TODO: Detect and configure block devices properly

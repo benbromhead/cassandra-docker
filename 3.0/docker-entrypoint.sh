@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -x
 
 # first arg is `-f` or `--some-option`
 # or there are no args
@@ -7,13 +7,27 @@ if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
 	set -- cassandra -f "$@"
 fi
 
-# allow the container to be started with `--user`
-if [ "$1" = 'cassandra' -a "$(id -u)" = '0' ]; then
-	chown -R cassandra /var/lib/cassandra /var/log/cassandra "$CASSANDRA_CONFIG"
-	exec gosu cassandra "$BASH_SOURCE" "$@"
+#Enable mem locking if supported (and we have permission)
+if [ "$MEMORY_LOCK" == "true" ]; then
+    ulimit -l unlimited
 fi
 
-if [ "$1" = 'cassandra' ]; then
+# Only break on error after trying to memlock
+set -e
+
+
+#TODO: Detect and configure block devices properly
+#echo deadline > /sys/block/sda/queue/scheduler
+#touch /var/lock/subsys/local
+#echo 0 > /sys/class/block/sda/queue/rotational
+#echo 8 > /sys/class/block/sda/queue/read_ahead_kb
+
+#TODO: disable swap (though mmap should keep core JVM heap in memory)
+
+
+# Allow injecting configuration values into c* yaml via env variables, this is optional and if no env overrides are
+# specified, then it will be a no-op. The only env var that MUST be set is CASSANDRA_SEEDS
+if [ "$1" = 'cassandra' ] && [ "$CASSANDRA_ENV_OVERRIDES" = 'true' ]; then
 	: ${CASSANDRA_RPC_ADDRESS='0.0.0.0'}
 
 	: ${CASSANDRA_LISTEN_ADDRESS='auto'}
@@ -32,7 +46,7 @@ if [ "$1" = 'cassandra' ]; then
 		: ${CASSANDRA_SEEDS:="cassandra"}
 	fi
 	: ${CASSANDRA_SEEDS:="$CASSANDRA_BROADCAST_ADDRESS"}
-	
+
 	sed -ri 's/(- seeds:).*/\1 "'"$CASSANDRA_SEEDS"'"/' "$CASSANDRA_CONFIG/cassandra.yaml"
 
 	for yaml in \
