@@ -46,6 +46,16 @@ Note that users on host systems with SELinux enabled may see issues with this. T
 $ chcon -Rt svirt_sandbox_file_t /my/own/datadir
 ```
 
+## Configuring the kernel
+To optimally run Cassandra, the kernal and a few other parameters for the process need to be tuned. Most of these can be done via the docker command being run:
+
+```console
+--cap-add=IPC_LOCK --ulimit memlock=-1 --ulimit nofile=100000 --ulimit nproc=32768
+```
+
+Some sysctl suggestions will need to be set at the docker host level. E.g. changes to the sysctl `vm.max_map_count`
+
+
 ## Injecting configuration
 To provide your own configuration for Cassandra, via a user provided cassandra.yaml, cassandra-env.sh, jvm.properties, rack-dc.properties file etc.
 You can volume mount the configration directory or use some other configuration management capability (e.g. kubernetes configMaps)
